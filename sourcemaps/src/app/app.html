@@ -324,22 +324,23 @@
     </div>
   </div>
 
-  <form (submit)="fetchWeather(); $event.preventDefault()">
+  <form (submit)="updateCity(cityInput.value); $event.preventDefault()">
     <label for="city">City:</label>
     <input
       id="city"
-      [(ngModel)]="city"
+      #cityInput
       name="city"
       type="text"
       placeholder="Enter city name"
+      value="Amsterdam"
     />
     <button type="submit">Get Weather</button>
   </form>
 
-  <div *ngIf="weatherReport">
+  <div *ngIf="weather()">
     <h2>Weather Report</h2>
-    <p>Temperature: {{ weatherReport?.hourly?.temperature_2m?.[0] }}°C</p>
-    <p>Location: {{ city }}</p>
+    <p>Temperature: {{ weather()?.hourly?.temperature_2m?.[0] }}°C</p>
+    <p>Location: {{ city() }}</p>
   </div>
 
   <router-outlet></router-outlet>

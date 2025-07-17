@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, effect } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GeocodeService } from './common/geocode.service';
 import { WeatherService } from './common/weather.service';
@@ -14,22 +14,34 @@ import { HttpClientModule } from '@angular/common/http';
 })
 export class App {
   protected readonly title = signal('sourcemaps');
-  city = 'Amsterdam';
-  weatherReport: any = null;
+  city = signal<string | undefined>(undefined);
+  weather = signal<any | undefined>(undefined);
 
   constructor(
     private geocodeService: GeocodeService,
     private weatherService: WeatherService
-  ) {}
+  ) {
+    effect(() => {
+      const cityName = this.city();
 
-  fetchWeather() {
-    this.geocodeService.lookupCity(this.city).subscribe((locations) => {
-      if (locations && locations.length > 0) {
-        const { lat, lon } = locations[0];
-        this.weatherService.getForecast(lat, lon).subscribe((forecast) => {
-          this.weatherReport = forecast;
-        });
+      if (!cityName) {
+        return;
       }
+
+      this.geocodeService.lookupCity(cityName).subscribe((locations) => {
+        if (locations && locations.length > 0) {
+          const { lat, lon } = locations[0];
+          this.weatherService.getForecast(lat, lon).subscribe((forecast) => {
+            this.weather.set(forecast);
+          });
+        }
+      });
     });
+  }
+
+  updateCity(newCity: string) {
+    if (newCity.trim()) {
+      this.city.set(newCity);
+    }
   }
 }
